@@ -6,6 +6,6 @@ public class Greeting {
     }
 
     public static void main(String[] args) {
-        sayHello();  // ← メソッドを呼び出す
+        sayHello();
     }
 }
