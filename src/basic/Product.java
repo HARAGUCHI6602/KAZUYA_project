@@ -1,29 +1,30 @@
 package basic;
 
-public class Product implements Searchable {
+public class Product {
+    private int id;
+    private String name;
+    private int price;
+    private int stock;
+    private int categoryId;
 
-    protected int id;
-    protected String name;
-    protected int price;
-    protected int stock;
+    // 商品登録用コンストラクタ（IDなし）
+    public Product(String name, int price, int stock, int categoryId) {
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+        this.categoryId = categoryId;
+    }
 
-    public Product(int id, String name, int price, int stock) throws Exception {
-        if (name == null || name.isEmpty()) {
-            throw new Exception("無効な入力です。商品名を正しく入力してください。");
-        }
-        if (price < 0) {
-            throw new Exception("無効な入力です。価格を正しく入力してください。");
-        }
-        if (stock < 0) {
-            throw new Exception("無効な入力です。在庫数を正しく入力してください。");
-        }
-
+    // 商品表示・取得用コンストラクタ（IDあり）
+    public Product(int id, String name, int price, int stock, int categoryId) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.stock = stock;
+        this.categoryId = categoryId;
     }
 
+    // Getter（必要に応じて追加可能）
     public int getId() {
         return id;
     }
@@ -40,12 +41,7 @@ public class Product implements Searchable {
         return stock;
     }
 
-    public String toString() {
-        return "Product: id=" + id + ", name=" + name + ", price=" + price + ", stock=" + stock;
+    public int getCategoryId() {
+        return categoryId;
     }
-    @Override
-    public boolean containsName(String keyword) {
-        return name.contains(keyword);
-    }
-
 }
