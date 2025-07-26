@@ -3,6 +3,7 @@ package db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import basic.Product;
 
@@ -11,7 +12,11 @@ public class PracticeDB {
     // データベース接続情報
     private static final String URL = "jdbc:mysql://localhost:3306/product_management";
     private static final String USER = "root";
-    private static final String PASSWORD = "Kazuya0219"; // ←ここは実際のパスワードに直してください
+    private static final String PASSWORD = "Kazuya0219"; 
+
+    public static Connection getConnection() throws Exception {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
 
     // 商品登録
     public static boolean insertProduct(Product product) {
@@ -63,5 +68,17 @@ public class PracticeDB {
             return 0;
         }
     }
+ // トランザクション用の更新（Connectionは外から渡す）
+    public static boolean updateProduct(Connection conn, Product product) throws SQLException {
+        String sql = "UPDATE products SET price = ?, stock = ? WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, product.getPrice());
+            pstmt.setInt(2, product.getStock());
+            pstmt.setInt(3, product.getId());
+            int result = pstmt.executeUpdate();
+            return result > 0;
+        }
+    }
+
 }
 

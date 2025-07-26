@@ -1,83 +1,58 @@
 package basic;
 
+import java.sql.Connection;
 import java.util.Scanner;
 
 import db.PracticeDB;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
+        try (Connection conn = PracticeDB.getConnection()) {
+            conn.setAutoCommit(false);
 
-        while (true) {
-            System.out.println("―― メニュー ――");
-            System.out.println("1: 商品追加");
-            System.out.println("2: 商品更新（価格・在庫）");
-            System.out.println("3: 商品削除（カテゴリID指定）");
-            System.out.println("0: 終了");
-            System.out.print("メニューから操作を選択してください：");
+            Product[] products = new Product[2];
 
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // 改行消し
+            for (int i = 0; i < 2; i++) {
+                System.out.println("--商品" + (i + 1) + "の価格と在庫を更新--");
+                System.out.print("商品IDを入力してください：");
+                int id = Integer.parseInt(scanner.nextLine());
+                System.out.print("価格を入力してください：");
+                int price = Integer.parseInt(scanner.nextLine());
+                System.out.print("在庫数を入力してください：");
+                int stock = Integer.parseInt(scanner.nextLine());
 
-            switch (choice) {
-                case 1:
-                    System.out.println("-- 商品の登録 --");
-                    System.out.print("商品名を入力してください：");
-                    String name = scanner.nextLine();
-                    System.out.print("価格を入力してください：");
-                    int price = scanner.nextInt();
-                    System.out.print("在庫数を入力してください：");
-                    int stock = scanner.nextInt();
-                    System.out.print("カテゴリIDを入力してください：");
-                    int categoryId = scanner.nextInt();
-
-                    Product product = new Product(name, price, stock, categoryId);
-                    boolean inserted = PracticeDB.insertProduct(product);
-                    if (inserted) {
-                        System.out.println("登録成功");
-                        System.out.println("商品名: " + name + "、価格: " + price + "、在庫数: " + stock + "、カテゴリID: " + categoryId);
-                    } else {
-                        System.out.println("登録失敗");
-                    }
-                    break;
-
-                case 2:
-                    System.out.println("-- 商品の価格と在庫を更新 --");
-                    System.out.print("商品IDを入力してください：");
-                    int updateId = scanner.nextInt();
-                    System.out.print("価格を入力してください：");
-                    int newPrice = scanner.nextInt();
-                    System.out.print("在庫数を入力してください：");
-                    int newStock = scanner.nextInt();
-
-                    boolean updated = PracticeDB.updateProductById(updateId, newPrice, newStock);
-                    if (updated) {
-                        System.out.println("更新成功");
-                        System.out.println("商品ID: " + updateId + "、価格: " + newPrice + "、在庫数: " + newStock);
-                    } else {
-                        System.out.println("更新失敗");
-                    }
-                    break;
-
-                case 3:
-                    System.out.println("-- 商品の削除（カテゴリID指定） --");
-                    System.out.print("削除するカテゴリIDを入力してください：");
-                    int delCategoryId = scanner.nextInt();
-                    int deletedCount = PracticeDB.deleteProductsByCategoryId(delCategoryId);
-                    System.out.println("削除成功件数：" + deletedCount + "件");
-                    break;
-
-                case 0:
-                    System.out.println("終了します。");
-                    scanner.close();
-                    return;
-
-                default:
-                    System.out.println("無効な選択です。もう一度お試しください。");
-                    break;
+                products[i] = new Product(id, price, stock);
             }
 
-            System.out.println(); // 改行
+            int successCount = 0;
+            for (Product p : products) {
+                if (PracticeDB.updateProduct(conn, p)) {
+                    successCount++;
+                } else {
+                    break;
+                }
+            }
+
+            if (successCount == products.length) {
+                conn.commit();
+                System.out.println("コミット成功");
+                System.out.println("更新成功件数：" + successCount + "件");
+
+                for (int i = 0; i < successCount; i++) {
+                    Product p = products[i];
+                    System.out.println("更新内容" + (i + 1) + "：");
+                    System.out.println("商品ID: " + p.getId() + ", 価格: " + p.getPrice() + ", 在庫数: " + p.getStock());
+                }
+            } else {
+                conn.rollback();
+                System.out.println("全ての更新に失敗しました。");
+                System.out.println("更新成功件数：" + successCount + "件");
+                System.out.println("ロールバックしました。");
+            }
+
+        } catch (Exception e) {
+            System.out.println("エラーが発生しました：" + e.getMessage());
         }
     }
 }

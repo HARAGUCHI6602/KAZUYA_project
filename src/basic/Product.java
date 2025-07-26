@@ -23,7 +23,14 @@ public class Product {
         this.stock = stock;
         this.categoryId = categoryId;
     }
+ // トランザクション用（id, price, stock）
+    public Product(int id, int price, int stock) {
+        this.id = id;
+        this.price = price;
+        this.stock = stock;
+    }
 
+    
     // Getter（必要に応じて追加可能）
     public int getId() {
         return id;
