@@ -38,4 +38,3 @@ public class CategoryListServlet extends HttpServlet {
         doGet(request, response);
     }
 }
-
