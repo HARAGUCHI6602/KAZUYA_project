@@ -1,39 +1,36 @@
+// src/main/java/model/dao/CategoryDAO.java
 package model.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.ConnectionManager;
 import model.entity.CategoryBean;
 
 public class CategoryDAO {
 
-    public List<CategoryBean> findAllCategories() {
-        List<CategoryBean> categoryList = new ArrayList<>();
+    // DBのカラムに合わせて Id を別名 category_id で受ける
+    private static final String SQL_FIND_ALL =
+        "SELECT Id AS category_id, category_name FROM categories ORDER BY Id";
 
-        String sql = "SELECT id, name FROM category";
-
-        try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+    public List<CategoryBean> findAll() {
+        List<CategoryBean> list = new ArrayList<>();
+        try (Connection con = ConnectionManager.getConnection();
+             PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                CategoryBean category = new CategoryBean();
-                category.setCategoryId(rs.getInt("id"));
-                category.setCategoryName(rs.getString("name"));
-                categoryList.add(category);
+                int id = rs.getInt("category_id");
+                String name = rs.getString("category_name");
+                list.add(new CategoryBean(id, name));
             }
-
-            // ログ出力で確認（任意）
-            System.out.println("カテゴリ件数：" + categoryList.size());
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            throw new RuntimeException("カテゴリ一覧の取得に失敗", e);
         }
-
-        return categoryList;
+        return list;
     }
 }
-

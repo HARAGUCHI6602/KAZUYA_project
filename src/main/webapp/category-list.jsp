@@ -1,28 +1,34 @@
-<%@ page contentType="text/html; charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>カテゴリリスト</title>
+    <meta charset="UTF-8">
+    <title>カテゴリリスト</title>
+    <style>
+        body { font-family: system-ui, sans-serif; }
+        table { border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #333; padding: 6px 10px; }
+        th { background: #f3f3f3; }
+    </style>
 </head>
 <body>
-  <h2>カテゴリリスト</h2>
+<h2>カテゴリリスト</h2>
 
-  <!-- デバッグ用：categoryList の中身を確認 -->
-  <p>中身: <c:out value="${categoryList}" /></p>
-
-  <table border="1">
+<table>
     <tr>
-      <th>カテゴリID</th>
-      <th>カテゴリ名</th>
+        <th>カテゴリID</th>
+        <th>カテゴリ名</th>
     </tr>
-    <c:forEach var="category" items="${categoryList}">
-      <tr>
-        <td>${category.categoryId}</td>
-        <td>${category.categoryName}</td>
-      </tr>
+
+    <!-- ここで一覧をぐるぐる表示 -->
+    <c:forEach var="cat" items="${categoryList}">
+        <tr>
+            <td><c:out value="${cat.id}"/></td>
+            <td><c:out value="${cat.name}"/></td>
+        </tr>
     </c:forEach>
-  </table>
+</table>
+
 </body>
 </html>
