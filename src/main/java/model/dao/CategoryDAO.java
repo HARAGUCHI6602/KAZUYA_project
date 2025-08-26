@@ -1,4 +1,3 @@
-// src/main/java/model/dao/CategoryDAO.java
 package model.dao;
 
 import java.sql.Connection;
@@ -8,17 +7,22 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.ConnectionManager;
-import model.entity.CategoryBean;
+import model.entity.Category;
 
 public class CategoryDAO {
 
-    // DBのカラムに合わせて Id を別名 category_id で受ける
-    private static final String SQL_FIND_ALL =
-        "SELECT Id AS category_id, category_name FROM categories ORDER BY Id";
+	// 一覧取得
+	private static final String SQL_FIND_ALL =
+	    "SELECT Id AS category_id, category_name FROM categories ORDER BY Id";
 
-    public List<CategoryBean> findAll() {
-        List<CategoryBean> list = new ArrayList<>();
+	// 追加（登録）　
+	private static final String SQL_INSERT =
+	    "INSERT INTO categories (Id, category_name) VALUES (?, ?)";
+
+
+    /** すべてのカテゴリを取得 */
+    public List<Category> findAll() {
+        List<Category> list = new ArrayList<>();
         try (Connection con = ConnectionManager.getConnection();
              PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL);
              ResultSet rs = ps.executeQuery()) {
@@ -26,13 +30,21 @@ public class CategoryDAO {
             while (rs.next()) {
                 int id = rs.getInt("category_id");
                 String name = rs.getString("category_name");
-                list.add(new CategoryBean(id, name));
+                list.add(new Category(id, name));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("カテゴリ一覧の取得に失敗", e);
+            throw new RuntimeException("カテゴリ一覧の取得に失敗しました。", e);
         }
         return list;
     }
+
+    /** カテゴリを1件登録する */
+    public int insert(Category c) throws SQLException {
+        try (Connection con = ConnectionManager.getConnection();
+             PreparedStatement ps = con.prepareStatement(SQL_INSERT)) {
+            ps.setInt(1, c.getCategoryId());
+            ps.setString(2, c.getCategoryName());
+            return ps.executeUpdate();
+        }
+    }
 }
-
-
