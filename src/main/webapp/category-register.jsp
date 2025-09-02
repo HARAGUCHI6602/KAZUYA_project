@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.*" %>
 <%
-  // サーブレットから戻ってきたときに表示する用（最初はnullなので空にする）
+  // サーブレットから戻ってきた際に表示する
   List<String> errors = (List<String>) request.getAttribute("errors");
   String categoryId   = (String) request.getAttribute("categoryId");
   String categoryName = (String) request.getAttribute("categoryName");
@@ -50,3 +50,4 @@
   </p>
 </body>
 </html>
+
