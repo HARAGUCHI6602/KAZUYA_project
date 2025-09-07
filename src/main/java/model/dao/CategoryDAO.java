@@ -11,40 +11,38 @@ import model.entity.Category;
 
 public class CategoryDAO {
 
-	// 一覧取得
-	private static final String SQL_FIND_ALL =
-	    "SELECT Id AS category_id, category_name FROM categories ORDER BY Id";
-
-	// 追加（登録）　
-	private static final String SQL_INSERT =
-	    "INSERT INTO categories (Id, category_name) VALUES (?, ?)";
-
-
-    /** すべてのカテゴリを取得 */
+    /** すべてのカテゴリをID昇順で取得 */
     public List<Category> findAll() {
+        String sql = "SELECT id, name FROM categories ORDER BY id";
         List<Category> list = new ArrayList<>();
+
         try (Connection con = ConnectionManager.getConnection();
-             PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL);
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                int id = rs.getInt("category_id");
-                String name = rs.getString("category_name");
-                list.add(new Category(id, name));
+                Category c = new Category();
+                c.setId(rs.getInt("id"));
+                c.setName(rs.getString("name"));
+                list.add(c);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("カテゴリ一覧の取得に失敗しました。", e);
+            e.printStackTrace(); // 学習用：コンソールに出力
         }
         return list;
     }
 
-    /** カテゴリを1件登録する */
-    public int insert(Category c) throws SQLException {
+    /** （任意）カテゴリ追加 */
+    public boolean insert(Category c) {
+        String sql = "INSERT INTO categories(name) VALUES(?)";
         try (Connection con = ConnectionManager.getConnection();
-             PreparedStatement ps = con.prepareStatement(SQL_INSERT)) {
-            ps.setInt(1, c.getCategoryId());
-            ps.setString(2, c.getCategoryName());
-            return ps.executeUpdate();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, c.getName());
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

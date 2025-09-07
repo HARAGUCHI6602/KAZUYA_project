@@ -21,14 +21,17 @@ public class AuthFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
-        String path = request.getRequestURI();
+        String path = request.getRequestURI().substring(request.getContextPath().length());
 
-        // ログイン画面・処理、および静的ファイルは素通り
-        boolean isLoginPath = path.endsWith("/login") || path.endsWith("/login.jsp");
+        // ログイン関連 or 静的ファイル or products系 は素通り
+        boolean isLoginPath = path.startsWith("/login") || path.equals("/login.jsp");
+        boolean isLogoutPath = path.startsWith("/logout");
+        boolean isProductsPath = path.startsWith("/products");   // ★ここを追加
         boolean isStatic = path.endsWith(".css") || path.endsWith(".js")
                          || path.endsWith(".png") || path.endsWith(".jpg")
                          || path.contains("/assets/");
-        if (isLoginPath || isStatic) {
+
+        if (isLoginPath || isLogoutPath || isProductsPath || isStatic) {
             chain.doFilter(req, res);
             return;
         }
@@ -56,4 +59,5 @@ public class AuthFilter implements Filter {
         // 今回は何もしない
     }
 }
+
 
