@@ -27,23 +27,35 @@ public class CategoryDAO {
                 list.add(c);
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // 学習用：コンソールに出力
+            // 学習用：コンソールに出力（本番はロガー推奨）
+            e.printStackTrace();
         }
         return list;
     }
 
-    /** （任意）カテゴリ追加 */
-    public boolean insert(Category c) {
-        String sql = "INSERT INTO categories(name) VALUES(?)";
+    /**
+     * カテゴリを登録する（ID・名前とも明示指定）
+     * 成功すれば true。
+     * ※ ここでは SQLException を握りつぶさず「投げる」→ 呼び出し側で重複IDなどを判定できる
+     */
+    public boolean insert(Category c) throws SQLException {
+        String sql = "INSERT INTO categories (id, name) VALUES (?, ?)";
         try (Connection con = ConnectionManager.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, c.getName());
+            ps.setInt(1, c.getId());
+            ps.setString(2, c.getName());
             return ps.executeUpdate() == 1;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
         }
     }
-}
 
+    // もし「IDは自動採番（AUTO_INCREMENT）で、名前だけ入れたい」場合は別メソッドを用意してもOK
+    // public boolean insertAuto(Category c) throws SQLException {
+    //     String sql = "INSERT INTO categories (name) VALUES (?)";
+    //     try (Connection con = ConnectionManager.getConnection();
+    //          PreparedStatement ps = con.prepareStatement(sql)) {
+    //         ps.setString(1, c.getName());
+    //         return ps.executeUpdate() == 1;
+    //     }
+    // }
+}

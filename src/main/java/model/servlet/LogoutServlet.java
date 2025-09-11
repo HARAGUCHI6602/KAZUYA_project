@@ -28,3 +28,4 @@ public class LogoutServlet extends HttpServlet {
         doPost(request, response);
     }
 }
+

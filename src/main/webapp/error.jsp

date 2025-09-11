@@ -1,10 +1,28 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>エラー</title></head>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>エラー</title>
+  <style>
+    body { font-family: sans-serif; margin: 24px; }
+    .msg { color: #c00; margin: 12px 0; }
+  </style>
+</head>
 <body>
   <h1>エラー</h1>
-  <p><%= request.getAttribute("message") != null ? request.getAttribute("message") : "処理に失敗しました。" %></p>
+  <%
+    Object msg = request.getAttribute("error");
+    if (msg == null) msg = request.getAttribute("message");
+    if (msg == null) { 
+      msg = session.getAttribute("flashError"); 
+      session.removeAttribute("flashError");
+    }
+    String text = (msg != null) ? msg.toString() : "処理に失敗しました。";
+  %>
+  <p class="msg"><%= text %></p>
   <p><a href="<%=request.getContextPath()%>/products">一覧へ戻る</a></p>
 </body>
 </html>
+
 

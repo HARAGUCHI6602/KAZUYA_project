@@ -28,3 +28,4 @@ public class ProductRegisterFormServlet extends HttpServlet {
         req.getRequestDispatcher("/product-register.jsp").forward(req, resp);
     }
 }
+

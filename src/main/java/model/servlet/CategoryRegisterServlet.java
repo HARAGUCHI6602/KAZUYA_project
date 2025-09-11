@@ -19,7 +19,7 @@ import model.entity.Category;
 public class CategoryRegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    // 確認用（アクセスすると「OK」）
+    // 動作確認用（必要なければ削除してOK）
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/plain; charset=UTF-8");
@@ -30,6 +30,7 @@ public class CategoryRegisterServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         request.setCharacterEncoding("UTF-8");
 
         String idStr = request.getParameter("categoryId");
@@ -37,6 +38,7 @@ public class CategoryRegisterServlet extends HttpServlet {
 
         List<String> errors = new ArrayList<>();
 
+        // --- 入力チェック ---
         int id = 0;
         if (idStr == null || idStr.isBlank()) {
             errors.add("カテゴリIDを入力してください。");
@@ -55,7 +57,7 @@ public class CategoryRegisterServlet extends HttpServlet {
             errors.add("カテゴリ名は100文字以内で入力してください。");
         }
 
-        // 入力値戻し用
+        // 入力値の保持（エラー時の戻し用）
         request.setAttribute("categoryId", idStr);
         request.setAttribute("categoryName", name);
 
@@ -66,20 +68,27 @@ public class CategoryRegisterServlet extends HttpServlet {
             return;
         }
 
+        // --- 登録処理 ---
         try {
             CategoryDAO dao = new CategoryDAO();
-            int updated = dao.insert(new Category(id, name));
-            if (updated == 0) {
+
+            // ★ 方式A：DAOの戻り値 boolean に合わせる
+            boolean inserted = dao.insert(new Category(id, name));
+
+            if (!inserted) {
                 errors.add("登録に失敗しました。もう一度お試しください。");
                 request.setAttribute("errors", errors);
                 RequestDispatcher rd = request.getRequestDispatcher("/category-register.jsp");
                 rd.forward(request, response);
                 return;
             }
+
+            // 成功：PRGで一覧へ
             response.sendRedirect(request.getContextPath() + "/categories");
+
         } catch (SQLException e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("Duplicate")) {
+            // 重複キー違反（MySQL: SQLState=23000, ErrorCode=1062）を丁寧に判定
+            if ("23000".equals(e.getSQLState()) && e.getErrorCode() == 1062) {
                 errors.add("そのカテゴリIDはすでに使われています。別のIDにしてください。");
             } else {
                 errors.add("サーバー内部エラーが発生しました。");
@@ -90,3 +99,6 @@ public class CategoryRegisterServlet extends HttpServlet {
         }
     }
 }
+
+
+

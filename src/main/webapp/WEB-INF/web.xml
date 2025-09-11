@@ -13,9 +13,24 @@
     <param-value>UTF-8</param-value>
   </context-param>
 
-  <!-- ===== ログイン／ログアウト サーブレット ===== -->
+  <!-- =========================
+       AuthFilter（必要になるまで一時停止）
+       ========================= -->
+  <!--
+  <filter>
+    <filter-name>AuthFilter</filter-name>
+    <filter-class>model.filter.AuthFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  -->
 
-  <!-- /login に対する処理 -->
+  <!-- =========================================
+       Login / Logout は @WebServlet に任せるためコメントアウト
+       ========================================= -->
+  <!--
   <servlet>
     <servlet-name>LoginServlet</servlet-name>
     <servlet-class>model.servlet.LoginServlet</servlet-class>
@@ -25,7 +40,6 @@
     <url-pattern>/login</url-pattern>
   </servlet-mapping>
 
-  <!-- /logout に対する処理 -->
   <servlet>
     <servlet-name>LogoutServlet</servlet-name>
     <servlet-class>model.servlet.LogoutServlet</servlet-class>
@@ -34,20 +48,11 @@
     <servlet-name>LogoutServlet</servlet-name>
     <url-pattern>/logout</url-pattern>
   </servlet-mapping>
+  -->
 
-  <!-- ===== 認可フィルタ（未ログインはログイン画面へ） ===== -->
-  <filter>
-    <filter-name>AuthFilter</filter-name>
-    <filter-class>model.filter.AuthFilter</filter-class>
-  </filter>
-  <filter-mapping>
-    <filter-name>AuthFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-
-  <!-- 最初に開くページ（ログインから始める場合は login.jsp 推奨） -->
+  <!-- トップアクセス時は /login（@WebServlet("/login")）へ -->
   <welcome-file-list>
-    <welcome-file>login.jsp</welcome-file>
+    <welcome-file>login</welcome-file>
   </welcome-file-list>
 
 </web-app>
