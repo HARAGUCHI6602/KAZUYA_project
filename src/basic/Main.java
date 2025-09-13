@@ -1,18 +1,58 @@
 package basic;
 
+import java.sql.Connection;
+import java.util.Scanner;
+
+import db.PracticeDB;
+
 public class Main {
-    public static void main(String[] args) {
-        // DiscountedProductのインスタンスを作成
-        DiscountedProduct dp = new DiscountedProduct(2, "ソファ", 30000, 5, 0.3);
+    public static void main(String[] args) throws Exception {
+        Scanner scanner = new Scanner(System.in);
+        try (Connection conn = PracticeDB.getConnection()) {
+            conn.setAutoCommit(false);
 
-        // 通常のProductも作成（比較用）
-        Product p = new Product(5, "Tシャツ", 1500, 5);
+            Product[] products = new Product[2];
 
-        // 商品情報を表示
-        System.out.println("ーー商品名「ソファ」の情報と割引率30％の情報を表示するーー");
-        System.out.println(dp);
+            for (int i = 0; i < 2; i++) {
+                System.out.println("--商品" + (i + 1) + "の価格と在庫を更新--");
+                System.out.print("商品IDを入力してください：");
+                int id = Integer.parseInt(scanner.nextLine());
+                System.out.print("価格を入力してください：");
+                int price = Integer.parseInt(scanner.nextLine());
+                System.out.print("在庫数を入力してください：");
+                int stock = Integer.parseInt(scanner.nextLine());
 
-        System.out.println("\nーー商品名「Tシャツ」を検索して表示するーー");
-        System.out.println(p);
+                products[i] = new Product(id, price, stock);
+            }
+
+            int successCount = 0;
+            for (Product p : products) {
+                if (PracticeDB.updateProduct(conn, p)) {
+                    successCount++;
+                } else {
+                    break;
+                }
+            }
+
+            if (successCount == products.length) {
+                conn.commit();
+                System.out.println("コミット成功");
+                System.out.println("更新成功件数：" + successCount + "件");
+
+                for (int i = 0; i < successCount; i++) {
+                    Product p = products[i];
+                    System.out.println("更新内容" + (i + 1) + "：");
+                    System.out.println("商品ID: " + p.getId() + ", 価格: " + p.getPrice() + ", 在庫数: " + p.getStock());
+                }
+            } else {
+                conn.rollback();
+                System.out.println("全ての更新に失敗しました。");
+                System.out.println("更新成功件数：" + successCount + "件");
+                System.out.println("ロールバックしました。");
+            }
+
+        } catch (Exception e) {
+            System.out.println("エラーが発生しました：" + e.getMessage());
+        }
     }
 }
