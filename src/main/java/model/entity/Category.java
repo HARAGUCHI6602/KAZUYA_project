@@ -28,3 +28,6 @@ public class Category {
     public void setId(int id) { this.categoryId = id; }
     public void setName(String name) { this.categoryName = name; }
 }
+
+
+

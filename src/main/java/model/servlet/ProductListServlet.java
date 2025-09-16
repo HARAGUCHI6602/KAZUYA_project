@@ -8,26 +8,29 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import model.dao.ProductDAO;
 import model.entity.Product;
 
 @WebServlet("/products")
 public class ProductListServlet extends HttpServlet {
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         try {
-            // 一覧取得
+            // 1) 一覧取得
             List<Product> products = new ProductDAO().findAllWithCategory();
             req.setAttribute("products", products);
 
-            // 例：登録直後に /products?success=1 で来たときにフラッシュ
-            if ("1".equals(req.getParameter("success"))) {
-                req.getSession().setAttribute("flashMessage", "商品を登録しました。");
-            }
+            // 2) クエリパラメータからフラッシュメッセージ設定（登録/更新/削除 成功など）
+            setFlashFromQuery(req);
 
-            // 構成に合わせて WEB-INF 配下へ forward
+            // 3) 直前のフラッシュメッセージがあれば request に移してからセッションから消す
+            moveFlashToRequest(req.getSession(), req);
+
+            // 4) 表示
             req.getRequestDispatcher("/WEB-INF/product-list.jsp").forward(req, resp);
 
         } catch (Exception e) {
@@ -35,5 +38,45 @@ public class ProductListServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/error.jsp").forward(req, resp);
         }
     }
-}
 
+    // POSTで来ても一覧表示に統一
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        doGet(req, resp);
+    }
+
+    // ------ helpers ------
+
+    /** /products?success=1&updated=1&deleted=1&error=メッセージ のような通知クエリをセッションへ */
+    private void setFlashFromQuery(HttpServletRequest req) {
+        if ("1".equals(req.getParameter("success"))) {
+            setFlash(req.getSession(), "商品を登録しました。");
+        }
+        if ("1".equals(req.getParameter("updated"))) {
+            setFlash(req.getSession(), "商品を更新しました。");
+        }
+        if ("1".equals(req.getParameter("deleted"))) {
+            setFlash(req.getSession(), "商品を削除しました。");
+        }
+        // 任意のエラーメッセージを渡したい場合 /products?error=... で
+        String err = req.getParameter("error");
+        if (err != null && !err.isBlank()) {
+            setFlash(req.getSession(), err);
+        }
+    }
+
+    /** セッションにフラッシュメッセージを積む */
+    private void setFlash(HttpSession session, String message) {
+        session.setAttribute("flashMessage", message);
+    }
+
+    /** セッションのフラッシュを request に移し、セッションからは削除 */
+    private void moveFlashToRequest(HttpSession session, HttpServletRequest req) {
+        Object msg = session.getAttribute("flashMessage");
+        if (msg != null) {
+            req.setAttribute("flashMessage", msg);
+            session.removeAttribute("flashMessage");
+        }
+    }
+}
