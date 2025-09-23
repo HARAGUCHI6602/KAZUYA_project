@@ -10,7 +10,7 @@ public class Product {
 
     public Product() {}
 
-    // 一覧用（JOINでカテゴリ名も一緒に持たせる想定）
+    // 一覧
     public Product(int id, String name, int price, int stock, int categoryId, String categoryName) {
         this.id = id;
         this.name = name;

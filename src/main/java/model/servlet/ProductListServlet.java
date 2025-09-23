@@ -20,14 +20,14 @@ public class ProductListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         try {
-            // 1) 一覧取得
+            // 1) 一覧データ取得
             List<Product> products = new ProductDAO().findAllWithCategory();
             req.setAttribute("products", products);
 
-            // 2) クエリパラメータからフラッシュメッセージ設定（登録/更新/削除 成功など）
+            // 2) クエリパラメータ(success/updated/deleted/error) からフラッシュをセット
             setFlashFromQuery(req);
 
-            // 3) 直前のフラッシュメッセージがあれば request に移してからセッションから消す
+            // 3) セッションにあるフラッシュメッセージを request に移動（1回表示）
             moveFlashToRequest(req.getSession(), req);
 
             // 4) 表示
@@ -39,16 +39,16 @@ public class ProductListServlet extends HttpServlet {
         }
     }
 
-    // POSTで来ても一覧表示に統一
+    // 一覧表示に統一（POSTもGETへ）
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         doGet(req, resp);
     }
 
-    // ------ helpers ------
+    // ------ ここからユーティリティ ------
 
-    /** /products?success=1&updated=1&deleted=1&error=メッセージ のような通知クエリをセッションへ */
+    /** クエリ (success/updated/deleted/error) に応じてフラッシュメッセージをセッションに積む */
     private void setFlashFromQuery(HttpServletRequest req) {
         if ("1".equals(req.getParameter("success"))) {
             setFlash(req.getSession(), "商品を登録しました。");
@@ -59,19 +59,18 @@ public class ProductListServlet extends HttpServlet {
         if ("1".equals(req.getParameter("deleted"))) {
             setFlash(req.getSession(), "商品を削除しました。");
         }
-        // 任意のエラーメッセージを渡したい場合 /products?error=... で
         String err = req.getParameter("error");
         if (err != null && !err.isBlank()) {
             setFlash(req.getSession(), err);
         }
     }
 
-    /** セッションにフラッシュメッセージを積む */
+    /** セッションにフラッシュメッセージをセット（次のリクエストで1回だけ表示） */
     private void setFlash(HttpSession session, String message) {
         session.setAttribute("flashMessage", message);
     }
 
-    /** セッションのフラッシュを request に移し、セッションからは削除 */
+    /** セッションのフラッシュメッセージを request へ移し、セッションから削除する */
     private void moveFlashToRequest(HttpSession session, HttpServletRequest req) {
         Object msg = session.getAttribute("flashMessage");
         if (msg != null) {

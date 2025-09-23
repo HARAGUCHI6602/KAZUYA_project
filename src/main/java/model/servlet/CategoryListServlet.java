@@ -22,7 +22,7 @@ public class CategoryListServlet extends HttpServlet {
         CategoryDAO dao = new CategoryDAO();
         List<Category> list = dao.findAll();
 
-        // ★JSPに合わせて "categoryList" という名前で渡す
+        // ★JSPに合わせて "categoryList" という名前で表記
         request.setAttribute("categoryList", list);
 
         RequestDispatcher rd = request.getRequestDispatcher("/category-list.jsp");

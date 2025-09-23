@@ -45,7 +45,7 @@ public class ProductRegisterServlet extends HttpServlet {
             req.setAttribute("old_price", priceStr);
             req.setAttribute("old_stock", stockStr);
             req.setAttribute("old_categoryId", categoryIdStr);
-            // フォームへ戻す（/products/register が ProductRegisterFormServlet にマッピング）
+            // フォームへ戻す
             req.getRequestDispatcher("/products/register").forward(req, resp);
             return;
         }
@@ -67,4 +67,5 @@ public class ProductRegisterServlet extends HttpServlet {
         }
     }
 }
+
 

@@ -16,16 +16,18 @@ public class LogoutServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         if (session != null) {
-            session.invalidate();                 // セッションを破棄
+            session.invalidate();                 // セッション　破棄
         }
         response.sendRedirect(request.getContextPath() + "/login.jsp");  // ログイン画面へ
     }
 
-    // GETで来た場合も同じ動きにしておくと安心
+    // 保険用
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         doPost(request, response);
     }
 }
+
+
 

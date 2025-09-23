@@ -44,7 +44,7 @@ public class DeleteServlet extends HttpServlet {
         }
     }
 
-    // 誤ってGETで来たら一覧へ
+    // 誤った場合一覧へ
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.sendRedirect(req.getContextPath() + "/products");

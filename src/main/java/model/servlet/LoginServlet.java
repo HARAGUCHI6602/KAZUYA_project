@@ -20,11 +20,11 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // ▼デバッグ：Tomcatが見ている実パスを出力（配備場所の確認用）
+        // ▼デバッグ：Tomcat　出力
         System.out.println("webappRoot=" + request.getServletContext().getRealPath("/"));
         System.out.println("realPath=" + request.getServletContext().getRealPath("/WEB-INF/login.jsp"));
 
-        // JSP は WEB-INF 配下にあるので forward で表示
+        // JSP は WEB-INF 配下　forward で表示
         request.getRequestDispatcher("/WEB-INF/login.jsp").forward(request, response);
     }
 
@@ -37,7 +37,7 @@ public class LoginServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        // 入力チェック
+        // チェック
         if (email == null || password == null || email.isBlank() || password.isBlank()) {
             request.setAttribute("error", "メールとパスワードを入力してください。");
             request.setAttribute("email", email);
@@ -45,13 +45,13 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        // 簡易認証（ハードコード）
+        // 簡易認証
         if (VALID_USER.equals(email) && VALID_PASS.equals(password)) {
             HttpSession session = request.getSession(true);
             session.setAttribute("user", email);       // セッションにユーザーを保存
             session.setMaxInactiveInterval(30 * 60);   // 30分で自動ログアウト
 
-            // ログイン後は商品一覧へ
+            // ログイン後→商品一覧
             response.sendRedirect(request.getContextPath() + "/products");
         } else {
             request.setAttribute("error", "メールまたはパスワードが違います。");

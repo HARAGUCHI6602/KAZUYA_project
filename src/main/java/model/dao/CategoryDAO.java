@@ -11,11 +11,9 @@ import model.entity.Category;
 
 /**
  * categories テーブル用 DAO
- * 使い方メモ：
- *  - 取得系（findAll / findById / exists）は内部で例外を握って RuntimeException に包まず、
- *    失敗時は空や null を返す簡易仕様。必要に応じてアプリ側でハンドリングしてください。
- *  - 変更系（insert / update / delete）は SQLException を「投げる」ので、
- *    呼び出し側で重複・外部キー制約などの判定ができます。
+ * メモ：
+ *  - 取得系
+ *  - 変更系
  */
 public class CategoryDAO {
 
@@ -35,7 +33,7 @@ public class CategoryDAO {
                 list.add(c);
             }
         } catch (SQLException e) {
-            // 学習用：コンソールに出力（本番はロガー推奨）
+            // 学習用：コンソールに出力
             e.printStackTrace();
         }
         return list;
@@ -61,7 +59,7 @@ public class CategoryDAO {
         }
     }
 
-    /** そのIDのカテゴリが存在するか？ */
+    /** そのIDのカテゴリが存在するか */
     public boolean exists(int id) {
         String sql = "SELECT 1 FROM categories WHERE id = ?";
         try (Connection con = ConnectionManager.getConnection();

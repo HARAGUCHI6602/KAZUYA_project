@@ -15,7 +15,7 @@ import model.entity.Product;
 /**
  * 商品編集フォームを表示するサーブレット
  * GET /products/edit?id={productId}
- * - 指定IDの商品を取得し、カテゴリ一覧と一緒に編集フォームJSPへforward
+ * - 指定IDの商品を取得し、カテゴリ一覧と一緒に編集フォームJSPへ
  * - 見つからない/ID不正なら一覧にリダイレクト
  */
 @WebServlet("/products/edit")

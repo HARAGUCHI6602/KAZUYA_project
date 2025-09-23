@@ -15,9 +15,8 @@ import model.dao.ProductDAO;
 import model.entity.Product;
 
 /**
- * 商品の更新を受け付けるサーブレット（編集フォームの保存ボタン）
- * POST /products/update
- * バリデーションに失敗したら編集フォームへ戻し、成功したら一覧にPRGでリダイレクト
+ * 編集フォームの保存ボタン
+ * バリデーションに失敗したら編集フォームへ戻し、成功したら一覧にリダイレクト
  */
 @WebServlet("/products/update")
 public class ProductUpdateServlet extends HttpServlet {
@@ -26,7 +25,7 @@ public class ProductUpdateServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // 文字化け対策（POST）
+        // 文字化け　対策
         req.setCharacterEncoding("UTF-8");
 
         // --- 1) 入力値の取得 ---
@@ -96,10 +95,10 @@ public class ProductUpdateServlet extends HttpServlet {
             errors.put("categoryId", "カテゴリを正しく選択してください。");
         }
 
-        // 画面に差し戻す用の一時オブジェクト（カテゴリ名はフォームで使わないので null）
+        // 画面に差し戻す用
         Product formValue = new Product(id, name, price, stock, categoryId, null);
 
-        // --- 3) エラーがあれば編集フォームへ戻す（forward） ---
+        // --- 3) エラーがあれば編集フォームへ戻す ---
         if (!errors.isEmpty()) {
             req.setAttribute("errors", errors);
             req.setAttribute("product", formValue);
@@ -124,7 +123,7 @@ public class ProductUpdateServlet extends HttpServlet {
         }
     }
 
-    // 誤ってGETした場合は一覧へ
+    // 誤った場合は一覧へ
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {

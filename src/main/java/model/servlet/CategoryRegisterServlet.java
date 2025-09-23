@@ -19,14 +19,14 @@ import model.entity.Category;
 public class CategoryRegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    // 動作確認用（必要なければ削除してOK）
+    // 動作確認用
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/plain; charset=UTF-8");
         resp.getWriter().println("OK: CategoryRegisterServlet is alive");
     }
 
-    // フォーム送信（POST）を受け取る
+    // フォーム送信を受け取る
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -87,7 +87,7 @@ public class CategoryRegisterServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/categories");
 
         } catch (SQLException e) {
-            // 重複キー違反（MySQL: SQLState=23000, ErrorCode=1062）を丁寧に判定
+            // 重複キー　エラー
             if ("23000".equals(e.getSQLState()) && e.getErrorCode() == 1062) {
                 errors.add("そのカテゴリIDはすでに使われています。別のIDにしてください。");
             } else {
