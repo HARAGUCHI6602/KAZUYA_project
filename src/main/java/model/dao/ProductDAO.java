@@ -245,5 +245,25 @@ public class ProductDAO {
             closeIfLocal(con);
         }
     }
+    /** 最新(最大)ID を返す。無ければ null */
+    public Integer findLatestId() {
+        String sql = "SELECT id FROM products ORDER BY id DESC LIMIT 1";
+        Connection con = null;
+        try {
+            con = getConnection();
+            try (PreparedStatement ps = con.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("id");
+                return null;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            closeIfLocal(con);
+        }
+    }
+
 }
+
 

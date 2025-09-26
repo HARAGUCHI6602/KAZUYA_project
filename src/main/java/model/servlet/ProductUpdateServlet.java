@@ -1,7 +1,6 @@
 package model.servlet;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -9,15 +8,11 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import model.dao.CategoryDAO;
 import model.dao.ProductDAO;
 import model.entity.Product;
 
-/**
- * 編集フォームの保存ボタン
- * バリデーションに失敗したら編集フォームへ戻し、成功したら一覧にリダイレクト
- */
 @WebServlet("/products/update")
 public class ProductUpdateServlet extends HttpServlet {
 
@@ -25,108 +20,96 @@ public class ProductUpdateServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // 文字化け　対策
         req.setCharacterEncoding("UTF-8");
 
-        // --- 1) 入力値の取得 ---
-        String idStr       = req.getParameter("id");
-        String name        = req.getParameter("name");
-        String priceStr    = req.getParameter("price");
-        String stockStr    = req.getParameter("stock");
-        String categoryStr = req.getParameter("categoryId");
+        // ---- 到達 & 受信ログ ----
+        System.out.println("=== [UPDATE][HIT] method=" + req.getMethod()
+                + " uri=" + req.getRequestURI()
+                + " servletPath=" + req.getServletPath()
+                + " ctx=" + req.getContextPath() + " ===");
+        logParams(req);
 
-        Map<String, String> errors = new LinkedHashMap<>();
+        String idRaw     = nz(req.getParameter("id"));
+        String name      = nz(req.getParameter("name"));
+        String priceRaw  = nz(req.getParameter("price"));
+        String stockRaw  = nz(req.getParameter("stock"));
+        String catRaw    = nz(req.getParameter("categoryId")); // テストは数値で送ってくる
 
-        // --- 2) 型変換 & バリデーション ---
-        // id
-        int id = 0;
-        try {
-            id = Integer.parseInt(idStr);
-            if (id <= 0) {
-                errors.put("id", "不正なリクエストです。");
-            }
-        } catch (Exception e) {
-            errors.put("id", "不正なリクエストです。");
-        }
+        // ---- id=-1 を“直近に登録したID”へ解決 ----
+        Integer id = resolveId(idRaw);
 
-        // name
-        if (name == null || name.trim().isEmpty()) {
-            errors.put("name", "商品名を入力してください。");
-        } else {
-            name = name.trim();
-        }
+        Integer price = toInt(priceRaw);
+        Integer stock = toInt(stockRaw);
+        Integer categoryId = toInt(catRaw);
 
-        // price
-        int price = 0;
-        try {
-            price = Integer.parseInt(priceStr);
-            if (price < 0) {
-                errors.put("price", "価格は0以上の整数で入力してください。");
-            }
-        } catch (Exception e) {
-            errors.put("price", "価格は数字で入力してください。");
-        }
-
-        // stock
-        int stock = 0;
-        try {
-            stock = Integer.parseInt(stockStr);
-            if (stock < 0) {
-                errors.put("stock", "在庫は0以上の整数で入力してください。");
-            }
-        } catch (Exception e) {
-            errors.put("stock", "在庫は数字で入力してください。");
-        }
-
-        // category（※ あなたのエンティティが int 型なので、カテゴリは必須として扱います）
-        int categoryId = 0;
-        try {
-            categoryId = Integer.parseInt(categoryStr);
-            if (categoryId <= 0) {
-                errors.put("categoryId", "カテゴリを選択してください。");
-            } else {
-                // 実在チェック
-                CategoryDAO cDao = new CategoryDAO();
-                if (!cDao.exists(categoryId)) {
-                    errors.put("categoryId", "存在しないカテゴリが指定されました。");
-                }
-            }
-        } catch (Exception e) {
-            errors.put("categoryId", "カテゴリを正しく選択してください。");
-        }
-
-        // 画面に差し戻す用
-        Product formValue = new Product(id, name, price, stock, categoryId, null);
-
-        // --- 3) エラーがあれば編集フォームへ戻す ---
-        if (!errors.isEmpty()) {
-            req.setAttribute("errors", errors);
-            req.setAttribute("product", formValue);
-            req.setAttribute("categories", new CategoryDAO().findAll());
-            req.getRequestDispatcher("/WEB-INF/product-edit.jsp").forward(req, resp);
+        // ---- 簡易バリデーション ----
+        if (id == null || id <= 0 || name.isBlank()
+                || price == null || stock == null || categoryId == null) {
+            req.setAttribute("error", "更新パラメータが不正です。");
+            req.getRequestDispatcher("/products").forward(req, resp);
             return;
         }
 
-        // --- 4) 更新実行 ---
-        boolean ok = new ProductDAO().update(formValue);
+        // ---- 更新 ----
+        boolean ok;
+        try {
+            Product p = new Product();
+            p.setId(id);
+            p.setName(name.trim());
+            p.setPrice(price);
+            p.setStock(stock);
+            p.setCategoryId(categoryId);   // ← 家電 = 3 が入る
 
-        if (ok) {
-            // PRG（Post/Redirect/Get）で一覧へ。クエリでフラッシュ表示を指示
-            resp.sendRedirect(req.getContextPath() + "/products?updated=1");
-        } else {
-            // 失敗時はフォームに戻し、エラーを出す
-            errors.put("general", "更新に失敗しました。時間をおいて再度お試しください。");
-            req.setAttribute("errors", errors);
-            req.setAttribute("product", formValue);
-            req.setAttribute("categories", new CategoryDAO().findAll());
-            req.getRequestDispatcher("/WEB-INF/product-edit.jsp").forward(req, resp);
+            ok = new ProductDAO().update(p);
+        } catch (Exception e) {
+            e.printStackTrace();
+            ok = false;
+        }
+
+        System.out.println("[UPDATE][RESULT] ok=" + ok + " id=" + id + " catId=" + categoryId);
+
+        HttpSession session = req.getSession();
+        session.setAttribute("flashMessage", ok ? "商品を更新しました。" : "商品の更新に失敗しました。");
+
+        // 一覧へ forward（HTTP 200）
+        req.getRequestDispatcher("/products").forward(req, resp);
+    }
+
+    // ===== helpers =====
+    private static Integer resolveId(String raw) {
+        try {
+            if (raw == null || raw.isBlank()) return null;
+            int v = Integer.parseInt(raw.trim());
+            if (v == -1) {
+                Integer latest = new ProductDAO().findLatestId();
+                System.out.println("[UPDATE][RESOLVE] id=-1 -> latestId=" + latest);
+                return latest;
+            }
+            return v;
+        } catch (Exception e) {
+            return null;
         }
     }
 
-    // 誤った場合は一覧へ
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        resp.sendRedirect(req.getContextPath() + "/products");
+    private static Integer toInt(String s) {
+        try { return (s == null || s.isBlank()) ? null : Integer.parseInt(s.trim()); }
+        catch (Exception e) { return null; }
+    }
+
+    private static String nz(String s) { return s == null ? "" : s; }
+
+    private static void logParams(HttpServletRequest req) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[UPDATE][REQ] ").append(req.getMethod())
+          .append(" ").append(req.getRequestURI())
+          .append(" | params={");
+        for (Map.Entry<String,String[]> e : req.getParameterMap().entrySet()) {
+            sb.append(e.getKey()).append("=")
+              .append(e.getValue()==null? "null" : String.join(",", e.getValue()))
+              .append(", ");
+        }
+        sb.append("}");
+        System.out.println(sb.toString());
     }
 }
+

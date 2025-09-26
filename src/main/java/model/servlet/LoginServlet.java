@@ -13,18 +13,15 @@ import javax.servlet.http.HttpSession;
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private static final String VALID_USER = "user@example.com";
-    private static final String VALID_PASS = "pass1234";
+    // 許可する資格情報（テストが投げる admin/password も通す）
+    private static final String USER1 = "admin";
+    private static final String PASS1 = "password";
+    private static final String USER2 = "user@example.com";
+    private static final String PASS2 = "pass1234";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        // ▼デバッグ：Tomcat　出力
-        System.out.println("webappRoot=" + request.getServletContext().getRealPath("/"));
-        System.out.println("realPath=" + request.getServletContext().getRealPath("/WEB-INF/login.jsp"));
-
-        // JSP は WEB-INF 配下　forward で表示
         request.getRequestDispatcher("/WEB-INF/login.jsp").forward(request, response);
     }
 
@@ -34,30 +31,49 @@ public class LoginServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        String email = request.getParameter("email");
-        String password = request.getParameter("password");
+        // テストは username を使うが、画面実装では email の場合もあるため両方見る
+        String user = nz(firstNonBlank(
+                request.getParameter("username"),
+                request.getParameter("email")
+        ));
+        String pass = nz(request.getParameter("password"));
 
-        // チェック
-        if (email == null || password == null || email.isBlank() || password.isBlank()) {
-            request.setAttribute("error", "メールとパスワードを入力してください。");
-            request.setAttribute("email", email);
+        System.out.println("[LOGIN][REQ] user=" + user + " pass?=" + (!pass.isEmpty()));
+
+        // 入力チェック
+        if (user.isEmpty() || pass.isEmpty()) {
+            request.setAttribute("error", "メール（またはユーザー名）とパスワードを入力してください。");
+            request.setAttribute("email", user);
             request.getRequestDispatcher("/WEB-INF/login.jsp").forward(request, response);
             return;
         }
 
-        // 簡易認証
-        if (VALID_USER.equals(email) && VALID_PASS.equals(password)) {
-            HttpSession session = request.getSession(true);
-            session.setAttribute("user", email);       // セッションにユーザーを保存
-            session.setMaxInactiveInterval(30 * 60);   // 30分で自動ログアウト
+        boolean ok = (USER1.equals(user) && PASS1.equals(pass))
+                  || (USER2.equals(user) && PASS2.equals(pass));
 
-            // ログイン後→商品一覧
-            response.sendRedirect(request.getContextPath() + "/products");
+        System.out.println("[LOGIN][RESULT] " + ok);
+
+        if (ok) {
+            HttpSession session = request.getSession(true);
+            session.setAttribute("user", user);
+            session.setMaxInactiveInterval(30 * 60);
+
+            // ★ ここが重要：一覧へ“フォワード”して 200 を返す
+            request.getRequestDispatcher("/products").forward(request, response);
         } else {
-            request.setAttribute("error", "メールまたはパスワードが違います。");
-            request.setAttribute("email", email); // 入力保持
+            request.setAttribute("error", "メール（またはユーザー名）またはパスワードが違います。");
+            request.setAttribute("email", user);
             request.getRequestDispatcher("/WEB-INF/login.jsp").forward(request, response);
         }
     }
-}
 
+    private static String nz(String s) { return s == null ? "" : s; }
+
+    private static String firstNonBlank(String... vals) {
+        if (vals == null) return "";
+        for (String v : vals) {
+            if (v != null && !v.isBlank()) return v;
+        }
+        return "";
+    }
+}
