@@ -30,10 +30,11 @@ public class ProductRegisterFormServlet extends HttpServlet {
         }
     }
 
-    // POSTで直接叩かれてもフォームを出す（保険）
+    // POSTからォームを出す
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         doGet(req, resp);
     }
 }
+

@@ -15,7 +15,7 @@ import javax.servlet.http.HttpSession;
 /**
  * 認証フィルタ
  * - /login と静的ファイルは素通り
- * - /products は誰でも閲覧可（要件に合わせて）
+ * - /products は誰でも閲覧可能
  * - /protected は未ログイン→ログイン画面、ログイン済み→一覧へフォワード
  */
 public class AuthFilter implements Filter {
@@ -46,20 +46,20 @@ public class AuthFilter implements Filter {
             return;
         }
 
-        // --- /protected のみここで握る ---
+        // --- /protected のみ---
         if (isProtected) {
             if (loggedIn) {
-                // ログイン済みなら商品一覧へフォワード（HTTP 200）
+                // ログイン済みなら商品一覧へフォワード
                 request.getRequestDispatcher("/products").forward(request, response);
             } else {
-                // 未ログインならログイン画面へフォワード（HTTP 200）
+                // 未ログインならログイン画面へフォワード
                 request.setAttribute("error", "ログインしてください。");
                 request.getRequestDispatcher("/WEB-INF/login.jsp").forward(request, response);
             }
             return;
         }
 
-        // それ以外のパスは、ログイン済みなら通過、未ログインならログインへ
+        // それ以外のパスは、ログイン済みなら通過、未ログインならログイン画面へ
         if (loggedIn) {
             chain.doFilter(req, res);
         } else {

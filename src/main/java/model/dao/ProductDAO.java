@@ -11,12 +11,12 @@ import model.entity.Product;
 
 /**
  * products テーブル用 DAO
- * - 本番： new ProductDAO() … 各メソッドで ConnectionManager を使う
+ * - 本番： new ProductDAO() … メソッドで ConnectionManager を使う
  * - テスト： new ProductDAO(con) …  Connection を使う
  */
 public class ProductDAO {
 
-    /** テストで外から接続。null のときは ConnectionManager を使う */
+    /** null のときは ConnectionManager を使う */
     private final Connection injectedCon;
 
     /** 本番用 */
@@ -24,7 +24,7 @@ public class ProductDAO {
         this.injectedCon = null;
     }
 
-    /** テスト用（H2 の接続） */
+    /** テスト用 */
     public ProductDAO(Connection con) {
         this.injectedCon = con;
     }
@@ -35,7 +35,7 @@ public class ProductDAO {
         return ConnectionManager.getConnection();
     }
 
-    /** 挿入が無い場合　close する（挿入あり＝テスト　閉じない） */
+    /**入力が無い場合　close する（有力あり＝テスト　閉じない） */
     private void closeIfLocal(Connection con) {
         if (injectedCon == null && con != null) {
             try { con.close(); } catch (SQLException ignore) {}

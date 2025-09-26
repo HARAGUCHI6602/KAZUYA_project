@@ -18,10 +18,10 @@ import model.entity.Category;
 import model.entity.Product;
 
 /**
- * 商品登録サーブレット（保存専用）
+ * 商品登録
  *  - フォーム POST を受けて DB 登録
- *  - 成功時は一覧JSPへ直接 forward（HTTP 200）
- *  - category は id だけでなく「名前」でも受け付ける（例: "食品"）
+ *  - 成功時は一覧JSPへ直接
+ *  - category は 「ID」と「名前」を受け入れ
  *
  * フォーム表示は ProductRegisterFormServlet(@WebServlet("/products/register")) が担当。
  */
@@ -40,13 +40,13 @@ public class ProductRegisterServlet extends HttpServlet {
                 + " uri=" + req.getRequestURI()
                 + " servletPath=" + req.getServletPath()
                 + " ctx=" + req.getContextPath() + " ===");
-        logParams(req); // 全パラメータを吐く
+        logParams(req); // 全パラメータ
 
         String name     = nz(req.getParameter("name"));
         String priceStr = nz(req.getParameter("price"));
         String stockStr = nz(req.getParameter("stock"));
 
-        // category はいろんな名前で来る可能性に対応
+        // category 
         String catRaw = firstNonBlank(
                 req.getParameter("categoryId"),
                 req.getParameter("category"),
@@ -59,7 +59,7 @@ public class ProductRegisterServlet extends HttpServlet {
         Integer price = parseInt(priceStr,  "価格は整数で入力してください。",   errors);
         Integer stock = parseInt(stockStr,  "在庫数は整数で入力してください。", errors);
 
-        // ★ 名前で来ている場合は ID に解決する（数字ならそのまま）
+        // ★ 名前&ID
         Integer categoryId = resolveCategoryId(catRaw, errors);
 
         if (name.isBlank())                        errors.add("商品名を入力してください。");
@@ -67,7 +67,7 @@ public class ProductRegisterServlet extends HttpServlet {
         if (stock != null && stock < 0)            errors.add("在庫数は0以上で入力してください。");
         if (categoryId == null || categoryId <= 0) errors.add("カテゴリを選択してください。");
 
-        // 入力エラー → フォームへ戻す（カテゴリ一覧も付ける）
+        // 入力エラー → フォームへ戻す
         if (!errors.isEmpty()) {
             System.out.println("[STORE][NG] validation errors: " + errors);
 
@@ -83,7 +83,7 @@ public class ProductRegisterServlet extends HttpServlet {
                 e.printStackTrace();
             }
 
-            // フォーム JSP へ（フォームサーブレットでもOKだが、ここは直接JSPへ）
+            // フォーム JSP へ
             req.getRequestDispatcher("/product-register.jsp").forward(req, resp);
             return;
         }
@@ -106,7 +106,7 @@ public class ProductRegisterServlet extends HttpServlet {
         }
 
         if (ok) {
-            // ★ 一覧JSPへ 直接 forward（/products へ forward しない）
+            // ★ 一覧JSPへ 直接 forward
             HttpSession session = req.getSession();
             session.setAttribute("flashMessage", "商品を登録しました。");
 
@@ -126,16 +126,16 @@ public class ProductRegisterServlet extends HttpServlet {
         }
     }
 
-    // -------- GET（直接叩かれたらフォームへ誘導） ----------
+    // -------- GET（フォームへ誘導） ----------
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         resp.sendRedirect(req.getContextPath() + "/products/register");
     }
 
-    // ===== helpers =====
+    // =====保険=====
 
-    /** 可能なら数値、だめならメッセージを積んで null を返す */
+    /** 可能なら数値、NGなら null を返す */
     private static Integer parseInt(String s, String msg, List<String> errors) {
         try {
             if (s == null || s.isBlank()) { errors.add(msg); return null; }
@@ -154,12 +154,12 @@ public class ProductRegisterServlet extends HttpServlet {
             try {
                 return Integer.parseInt(v);
             } catch (NumberFormatException ignore) {
-                // 名前の可能性があるので次へ
+                // 名前の可能性があるかもしれない
             }
         }
         if (v.isEmpty()) return null;
 
-        // 名前で来た場合は CategoryDAO から全件取得して一致を探す
+        // 名前で来た場合は CategoryDAO から全件取得
         try {
             List<Category> list = new CategoryDAO().findAll();
             for (Category c : list) {
@@ -178,7 +178,7 @@ public class ProductRegisterServlet extends HttpServlet {
         }
     }
 
-    /** 全パラメータをログ（デバッグ用） */
+    /** 全パラメータをログ */
     private static void logParams(HttpServletRequest req) {
         StringBuilder sb = new StringBuilder();
         sb.append("[STORE][REQ] ").append(req.getMethod())
@@ -194,7 +194,7 @@ public class ProductRegisterServlet extends HttpServlet {
         System.out.println(sb.toString());
     }
 
-    /** ゆるめ比較（前後空白除去のみ） */
+    /** 比較 */
     private static boolean equalsLoose(String a, String b) {
         if (a == null || b == null) return false;
         return a.trim().equals(b.trim());

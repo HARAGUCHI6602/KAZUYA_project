@@ -71,11 +71,11 @@ public class ProductUpdateServlet extends HttpServlet {
         HttpSession session = req.getSession();
         session.setAttribute("flashMessage", ok ? "商品を更新しました。" : "商品の更新に失敗しました。");
 
-        // 一覧へ forward（HTTP 200）
+        // 一覧へ forward
         req.getRequestDispatcher("/products").forward(req, resp);
     }
 
-    // ===== helpers =====
+    // ===== 保険 =====
     private static Integer resolveId(String raw) {
         try {
             if (raw == null || raw.isBlank()) return null;

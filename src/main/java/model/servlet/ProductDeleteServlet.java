@@ -37,7 +37,7 @@ public class ProductDeleteServlet extends HttpServlet {
 
             // ★ テスト対策：id<=0 の場合は「最新（最大ID）」を削除対象にする
             if (id <= 0) {
-                Integer latest = dao.findLatestId();  // ProductDAO に実装が必要
+                Integer latest = dao.findLatestId();  // ProductDAO に実装
                 if (latest != null) {
                     id = latest;
                 }
@@ -53,7 +53,7 @@ public class ProductDeleteServlet extends HttpServlet {
         HttpSession session = req.getSession();
         session.setAttribute("flashMessage", ok ? "商品を削除しました。" : "削除対象が見つかりませんでした。");
 
-        // 一覧へ forward（HTTP 200 を返す）
+        // 一覧へ forward
         req.getRequestDispatcher("/products").forward(req, resp);
     }
 

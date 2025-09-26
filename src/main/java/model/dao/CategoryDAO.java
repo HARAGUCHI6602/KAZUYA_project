@@ -120,7 +120,7 @@ public class CategoryDAO {
     }
 
     /**
-     * 1件削除（外部キー制約に注意：products などが参照していると失敗します）
+     * 1件削除
      * 成功すれば true
      */
     public boolean delete(int id) throws SQLException {

@@ -13,7 +13,7 @@ import javax.servlet.http.HttpSession;
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    // 許可する資格情報（テストが投げる admin/password も通す）
+    // 許可するパターン
     private static final String USER1 = "admin";
     private static final String PASS1 = "password";
     private static final String USER2 = "user@example.com";
@@ -31,7 +31,7 @@ public class LoginServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        // テストは username を使うが、画面実装では email の場合もあるため両方見る
+        // テストは username を使うが、画面実装では email の場合もあるため両方許可
         String user = nz(firstNonBlank(
                 request.getParameter("username"),
                 request.getParameter("email")
@@ -40,7 +40,7 @@ public class LoginServlet extends HttpServlet {
 
         System.out.println("[LOGIN][REQ] user=" + user + " pass?=" + (!pass.isEmpty()));
 
-        // 入力チェック
+        // 入力確認
         if (user.isEmpty() || pass.isEmpty()) {
             request.setAttribute("error", "メール（またはユーザー名）とパスワードを入力してください。");
             request.setAttribute("email", user);
@@ -58,7 +58,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("user", user);
             session.setMaxInactiveInterval(30 * 60);
 
-            // ★ ここが重要：一覧へ“フォワード”して 200 を返す
+            // 一覧へ
             request.getRequestDispatcher("/products").forward(request, response);
         } else {
             request.setAttribute("error", "メール（またはユーザー名）またはパスワードが違います。");
